@@ -58,7 +58,6 @@ CREATE TABLE Emprestimo (
 CREATE TABLE Multa (
     Id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
     Valor_inicial FLOAT NOT NULL,
-    Valor_atual FLOAT,
     DataInicio DATETIME NOT NULL,
     Locadora_CNPJ VARCHAR(18) NOT NULL,
     Emprestimo_Id INT NOT NULL,
@@ -93,10 +92,7 @@ END $$
 
 DELIMITER $$
 
-CREATE TRIGGER nova_multa BEFORE INSERT ON Multa FOR EACH ROW
-BEGIN
-	SET NEW.valor_atual = NEW.valor_inicial;
-END $$
+
 CREATE TRIGGER nova_quantidade BEFORE INSERT ON Emprestimo FOR EACH ROW
 BEGIN
     DECLARE qtd_disponivel INT;
@@ -184,4 +180,5 @@ INSERT INTO Cliente_da_Locadora (Locadora_CNPJ, Cliente_CPF) VALUES
 ('91.438.526/0001-42', '159.357.456-33');
 
 SELECT * FROM Emprestimo;
+
 SELECT Id, Titulo, Quantidade, Disponivel FROM Filme;
