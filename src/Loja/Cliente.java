@@ -1,5 +1,7 @@
 package Loja;
 
+import Sql.BD;
+
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -207,7 +209,7 @@ public class Cliente extends Conta {
                 System.out.println("Insira apenas números no ID!");
                 return;
             }
-            pagaMulta(id, locadoraAtual.bd);
+            pagaMulta(id, BD.getConexao());
         } else {
             System.out.println("✅ Sem multas pendentes!");
         }

@@ -43,6 +43,10 @@ public class Multa implements Exibir {
         this.dataDePagamento = dataDePagamento;
     }
 
+    public float getValor() {
+        return valor;
+    }
+
     @Override
     public void mostra() {
         System.out.println("  ----------------------------------------");

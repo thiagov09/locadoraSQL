@@ -1,6 +1,8 @@
 package Programa;
 
 import Loja.*;
+import Sql.BD;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.InputMismatchException;
@@ -119,11 +121,11 @@ public class Menu {
                     clienteAtual.deslogar();
                     break ;
                 case 2:
-                    clienteAtual.alugarFilme(locadoraAtual, locadoraAtual.bd);
+                    clienteAtual.alugarFilme(locadoraAtual, BD.getConexao());
                     break;
                 case 3:
                     locadoraAtual.verificaMultas();
-                    clienteAtual.devolverFilme(locadoraAtual, locadoraAtual.bd);
+                    clienteAtual.devolverFilme(locadoraAtual, BD.getConexao());
                     break;
                 case 4:
                     locadoraAtual.verificaMultas();
