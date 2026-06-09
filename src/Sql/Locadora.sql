@@ -73,8 +73,8 @@ CREATE ROLE 'Cargo_Vendedor';
 GRANT SELECT, INSERT ON locadora.Loja.Filme TO 'Cargo_Vendedor';
 
 CREATE ROLE 'Cargo_Gerente';
-GRANT ALL ON locadora.Loja.ContaCliente TO 'Cargo_Gerente';
-GRANT ALL ON locadora.Loja.ContaVendedor TO 'Cargo_Gerente';
+GRANT ALL ON locadora.Loja.Cliente TO 'Cargo_Gerente';
+GRANT ALL ON locadora.Loja.Vendedor TO 'Cargo_Gerente';
 
 CREATE USER 'gerente'@'%' IDENTIFIED BY '1234';
 CREATE USER 'vendedor'@'%' IDENTIFIED BY '1234';

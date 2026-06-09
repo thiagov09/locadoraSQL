@@ -101,12 +101,12 @@ public class Menu {
         }
     }
 
-    public static void menuCliente(ContaCliente contaClienteAtual){
+    public static void menuCliente(Cliente clienteAtual){
         TempoSessao sessao = new TempoSessao();
         Thread s = new Thread(sessao);
         s.start();
 
-        while(contaClienteAtual.isLogado()) {
+        while(clienteAtual.isLogado()) {
             reset();
             addOption("Deslogar da conta");
             addOption("Alugar filme");
@@ -116,37 +116,37 @@ public class Menu {
 
             switch (option) {
                 case 1:
-                    contaClienteAtual.deslogar();
+                    clienteAtual.deslogar();
                     break ;
                 case 2:
-                    contaClienteAtual.alugarFilme(locadoraAtual, locadoraAtual.bd);
+                    clienteAtual.alugarFilme(locadoraAtual, locadoraAtual.bd);
                     break;
                 case 3:
                     locadoraAtual.verificaMultas();
-                    contaClienteAtual.devolverFilme(locadoraAtual, locadoraAtual.bd);
+                    clienteAtual.devolverFilme(locadoraAtual, locadoraAtual.bd);
                     break;
                 case 4:
                     locadoraAtual.verificaMultas();
-                    contaClienteAtual.conferirMulta(locadoraAtual);
+                    clienteAtual.conferirMulta(locadoraAtual);
                     break;
             }
         }
         sessao.encerrar();
-        System.out.println("Tempo usando a conta de [" + contaClienteAtual.getNome() + "]: " + sessao.getSegundos() + " segundos.");
+        System.out.println("Tempo usando a conta de [" + clienteAtual.getNome() + "]: " + sessao.getSegundos() + " segundos.");
         System.out.println("Retornando ao menu principal\n");
     }
 
-    public static void menuVendedor(ContaVendedor contaVendedorAtual){
+    public static void menuVendedor(Vendedor vendedorAtual){
         TempoSessao sessao = new TempoSessao();
         Thread s = new Thread(sessao);
         s.start();
 
-        while(contaVendedorAtual.isLogado()) {
+        while(vendedorAtual.isLogado()) {
             reset();
             addOption("Deslogar da conta");
             addOption("Adicionar filme");
             addOption("Remover filme");
-            if (contaVendedorAtual.isAdmin()) {
+            if (vendedorAtual.isAdmin()) {
                 addOption("Adicionar vendedor");
                 addOption("Remover vendedor");
                 addOption("Tornar vendedor admin / remover admin");
@@ -155,7 +155,7 @@ public class Menu {
 
             switch (option) {
                 case 1:
-                    contaVendedorAtual.deslogar();
+                    vendedorAtual.deslogar();
                     break;
                 case 2:
                     locadoraAtual.addFilme();
@@ -167,15 +167,15 @@ public class Menu {
                     locadoraAtual.addVendedor();
                     break;
                 case 5:
-                    locadoraAtual.RemoverVendedor(contaVendedorAtual);
+                    locadoraAtual.RemoverVendedor(vendedorAtual);
                     break;
                 case 6:
-                    locadoraAtual.promoverVendedor(contaVendedorAtual);
+                    locadoraAtual.promoverVendedor(vendedorAtual);
                     break;
             }
         }
         sessao.encerrar();
-        System.out.println("Tempo usando a conta de [" + contaVendedorAtual.getNome() + "]: " + sessao.getSegundos() + " segundos.");
+        System.out.println("Tempo usando a conta de [" + vendedorAtual.getNome() + "]: " + sessao.getSegundos() + " segundos.");
         System.out.println("Retornando ao menu principal\n");
     }
 

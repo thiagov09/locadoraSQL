@@ -16,6 +16,7 @@ public class BD{
         }
         catch (SQLException e){
             System.out.println("Erro ao conectar ao banco de dados!");
+
             return false;
         }
     }

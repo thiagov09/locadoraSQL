@@ -13,8 +13,8 @@ public class Locadora {
     private String CNPJ;
     private String cidade;
     private ArrayList<Filme> filmes = new ArrayList<>();
-    private ArrayList<ContaCliente> contaClientes = new ArrayList<>();
-    private ArrayList<ContaVendedor> vendedores = new ArrayList<>();
+    private ArrayList<Cliente> clientes = new ArrayList<>();
+    private ArrayList<Vendedor> vendedores = new ArrayList<>();
     private static Scanner sc = new Scanner(System.in);
     public Connection bd;
 
@@ -24,7 +24,7 @@ public class Locadora {
         System.out.println("========================================");
         System.out.println("  Locadora : " + nome);
         System.out.println("  Cidade   : " + cidade);
-        System.out.println("  Clientes : " + contaClientes.size());
+        System.out.println("  Clientes : " + clientes.size());
         System.out.println("========================================\n");
     }
 
@@ -45,8 +45,8 @@ public class Locadora {
         try(PreparedStatement st = bd.prepareStatement(sql);
             ResultSet rs = st.executeQuery()){
             while(rs.next()){
-                ContaVendedor novoContaVendedor = new ContaVendedor(rs.getString("Nome"), rs.getString("CPF"), rs.getInt("Senha"), rs.getDate("Data_de_nascimento").toLocalDate(), rs.getFloat("Salario"), rs.getBoolean("AdminStatus"));
-                vendedores.add(novoContaVendedor);
+                Vendedor novoVendedor = new Vendedor(rs.getString("Nome"), rs.getString("CPF"), rs.getInt("Senha"), rs.getDate("Data_de_nascimento").toLocalDate(), rs.getFloat("Salario"), rs.getBoolean("AdminStatus"));
+                vendedores.add(novoVendedor);
             }
         }catch(SQLException e){
             System.out.println("Erro SQL");
@@ -59,12 +59,12 @@ public class Locadora {
         try (PreparedStatement st = bd.prepareStatement(sql);
              ResultSet rs = st.executeQuery()) {
             while (rs.next()) {
-                ContaCliente novoContaCliente = new ContaCliente(
+                Cliente novoCliente = new Cliente(
                         rs.getString("Nome"),
                         rs.getString("CPF"),
                         rs.getInt("Senha"),
                         rs.getDate("Data_de_nascimento").toLocalDate());
-                contaClientes.add(novoContaCliente);
+                clientes.add(novoCliente);
             }
         } catch (SQLException e) {
             System.out.println("Erro SQL");
@@ -108,8 +108,8 @@ public class Locadora {
              ResultSet rs = st.executeQuery()) {
             while (rs.next()) {
                 String cpfCliente = rs.getString("Cliente_CPF");
-                for (ContaCliente contaCliente : contaClientes) {
-                    if (contaCliente.getCpf().equals(cpfCliente)) {
+                for (Cliente cliente : clientes) {
+                    if (cliente.getCpf().equals(cpfCliente)) {
                         LocalDate devolvido = null;
                         if (rs.getDate("Devolvido") != null) {
                             devolvido = rs.getDate("Devolvido").toLocalDate();
@@ -122,7 +122,7 @@ public class Locadora {
                                 cpfCliente,
                                 rs.getInt("Filme_Id")
                         );
-                        contaCliente.addEmprestimo(emp);
+                        cliente.addEmprestimo(emp);
                         break;
                     }
                 }
@@ -137,15 +137,15 @@ public class Locadora {
              ResultSet rs = st.executeQuery()) {
             while (rs.next()) {
                 int idEmprestimo = rs.getInt("Emprestimo_Id");
-                for (ContaCliente contaCliente : contaClientes) {
-                    for (Emprestimo emp : contaCliente.getEmprestimos()) {
+                for (Cliente cliente : clientes) {
+                    for (Emprestimo emp : cliente.getEmprestimos()) {
                         if (emp.getIdEmprestimo() == idEmprestimo) {
-                            Multa multa = new Multa(idEmprestimo, rs.getFloat("Valor"), rs.getDate("Data").toLocalDate(), contaCliente.getCpf());
+                            Multa multa = new Multa(idEmprestimo, rs.getFloat("Valor"), rs.getDate("Data").toLocalDate(), cliente.getCpf());
                             multa.setId(rs.getInt("Id"));
                             if (rs.getDate("DataPagamento") != null) {
                                 multa.setDataDePagamento(rs.getDate("DataPagamento").toLocalDate());
                             }
-                            contaCliente.addMulta(multa);
+                            cliente.addMulta(multa);
                             break;
                         }
                     }
@@ -172,7 +172,7 @@ public class Locadora {
                 }
 
                 String cpfNovo = Menu.scanCPF();
-                while(buscarConta(contaClientes, cpfNovo) != null){
+                while(buscarConta(clientes, cpfNovo) != null){
                     System.out.println("CPF já cadastrado!");
                     cpfNovo = Menu.scanCPF();
                 }
@@ -189,8 +189,8 @@ public class Locadora {
                     System.out.println("Data inválida! A idade deve ser entre 0 e 130 anos.");
                     dataNova = Menu.scanData();
                 }
-                ContaCliente contaClienteNovo = new ContaCliente(nomeNovo, cpfNovo, senhaNova, dataNova);
-                addCliente(contaClienteNovo);
+                Cliente clienteNovo = new Cliente(nomeNovo, cpfNovo, senhaNova, dataNova);
+                addCliente(clienteNovo);
             } else {
                 break;
             }
@@ -204,7 +204,7 @@ public class Locadora {
 
         while(true) {
             try {
-                if (tipo == 1) contaAtual = buscarConta(contaClientes, cpfLogin);
+                if (tipo == 1) contaAtual = buscarConta(clientes, cpfLogin);
                 else if (tipo == 2) contaAtual = buscarConta(vendedores, cpfLogin);
 
                 System.out.print("Digite a senha: ");
@@ -212,10 +212,10 @@ public class Locadora {
                 contaAtual.logar(cpfLogin, senhaLogin);
 
                 if (tipo == 1 && contaAtual.isLogado()) {
-                    Menu.menuCliente((ContaCliente) contaAtual);
+                    Menu.menuCliente((Cliente) contaAtual);
                     return true;
                 } else if (tipo == 2 && contaAtual.isLogado()) {
-                    Menu.menuVendedor((ContaVendedor) contaAtual);
+                    Menu.menuVendedor((Vendedor) contaAtual);
                     return true;
                 }
             } catch (NullPointerException e) {
@@ -237,15 +237,15 @@ public class Locadora {
         return null;
     }
 
-    public void addCliente(ContaCliente contaClienteNovo){
-        contaClientes.add(contaClienteNovo);
+    public void addCliente(Cliente clienteNovo){
+        clientes.add(clienteNovo);
 
         String sql = "INSERT INTO Cliente (CPF, Nome, Data_de_nascimento, Senha) VALUES (?, ?, ?, ?)";
         try(PreparedStatement st = bd.prepareStatement(sql)) {
-            st.setString(1, contaClienteNovo.getCpf());
-            st.setString(2, contaClienteNovo.getNome());
-            st.setDate(3, java.sql.Date.valueOf(contaClienteNovo.getDataDeNascimento()));
-            st.setInt(4, contaClienteNovo.getHashSenha());
+            st.setString(1, clienteNovo.getCpf());
+            st.setString(2, clienteNovo.getNome());
+            st.setDate(3, java.sql.Date.valueOf(clienteNovo.getDataDeNascimento()));
+            st.setInt(4, clienteNovo.getHashSenha());
             st.executeUpdate();
 
             System.out.println("Cliente inserido com sucesso!");
@@ -253,7 +253,7 @@ public class Locadora {
             String sqlVinculo = "INSERT INTO Cliente_da_Locadora (Locadora_CNPJ, Cliente_CPF) VALUES (?, ?)";
             try (PreparedStatement stVinculo = bd.prepareStatement(sqlVinculo)) {
                 stVinculo.setString(1, CNPJ);
-                stVinculo.setString(2, contaClienteNovo.getCpf());
+                stVinculo.setString(2, clienteNovo.getCpf());
                 stVinculo.executeUpdate();
             } catch (SQLException e) {
                 System.out.println("Erro ao vincular cliente à locadora!");
@@ -266,19 +266,19 @@ public class Locadora {
         }
     }
 
-    public void addVendedor(ContaVendedor contaVendedorNovo){
-        vendedores.add(contaVendedorNovo);
+    public void addVendedor(Vendedor vendedorNovo){
+        vendedores.add(vendedorNovo);
 
         String sql = "INSERT INTO Vendedor (CPF, Nome, Salario, Data_de_nascimento, Senha, Locadora_CNPJ, AdminStatus) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?)";
         try(PreparedStatement st = bd.prepareStatement(sql)){
-            st.setString(1, contaVendedorNovo.getCpf());
-            st.setString(2, contaVendedorNovo.getNome());
-            st.setFloat(3, contaVendedorNovo.getSalario());
-            st.setDate(4, java.sql.Date.valueOf(contaVendedorNovo.getDataDeNascimento()));
-            st.setInt(5, contaVendedorNovo.getHashSenha());
+            st.setString(1, vendedorNovo.getCpf());
+            st.setString(2, vendedorNovo.getNome());
+            st.setFloat(3, vendedorNovo.getSalario());
+            st.setDate(4, java.sql.Date.valueOf(vendedorNovo.getDataDeNascimento()));
+            st.setInt(5, vendedorNovo.getHashSenha());
             st.setString(6, CNPJ);
-            st.setBoolean(7, contaVendedorNovo.isAdmin());
+            st.setBoolean(7, vendedorNovo.isAdmin());
             st.executeUpdate();
             System.out.println("Vendedor inserido com sucesso!");
         } catch (SQLIntegrityConstraintViolationException e) {
@@ -336,27 +336,27 @@ public class Locadora {
         Menu.verificarOption();
         boolean statusNovo = Menu.getOption() == 1;
 
-        ContaVendedor contaVendedorNovo = new ContaVendedor(nomeNovo, cpfNovo, senhaNova, dataNova, salarioNovo, statusNovo);
-        vendedores.add(contaVendedorNovo);
-        addVendedor(contaVendedorNovo);
+        Vendedor vendedorNovo = new Vendedor(nomeNovo, cpfNovo, senhaNova, dataNova, salarioNovo, statusNovo);
+        vendedores.add(vendedorNovo);
+        addVendedor(vendedorNovo);
         System.out.println("Vendedor inserido com sucesso!\n");
     }
 
-    public void promoverVendedor(ContaVendedor contaVendedorConta){
-        ContaVendedor contaVendedorAtual = null;
+    public void promoverVendedor(Vendedor contaVendedor){
+        Vendedor vendedorAtual = null;
         String busca;
         while(true){
             busca = Menu.scanCPF();
-            contaVendedorAtual = (ContaVendedor) buscarConta(vendedores, busca);
-            if(contaVendedorAtual == null) System.out.println("CPF não encontrado!");
+            vendedorAtual = (Vendedor) buscarConta(vendedores, busca);
+            if(vendedorAtual == null) System.out.println("CPF não encontrado!");
             else break;
         }
         Menu.reset(false);
 
-        if (contaVendedorAtual.isAdmin() && contaVendedorConta.getCpf().equals(busca)){
+        if (vendedorAtual.isAdmin() && contaVendedor.getCpf().equals(busca)){
             System.out.println("Você não pode retirar seu próprio cargo.\n");
             return;
-        } else if(contaVendedorAtual.isAdmin()){
+        } else if(vendedorAtual.isAdmin()){
             System.out.println("O vendedor já é admin, deseja remover o admin?");
             Menu.addOption("Sim");
             Menu.addOption("Não");
@@ -368,16 +368,16 @@ public class Locadora {
 
         Menu.verificarOption();
         if(Menu.getOption() == 1) {
-            contaVendedorAtual.setAdmin(!contaVendedorAtual.isAdmin());
+            vendedorAtual.setAdmin(!vendedorAtual.isAdmin());
             String sql = "UPDATE Vendedor SET AdminStatus = ? WHERE CPF = ?";
             try (PreparedStatement st = bd.prepareStatement(sql)) {
-                st.setBoolean(1, contaVendedorAtual.isAdmin());
-                st.setString(2, contaVendedorAtual.getCpf());
+                st.setBoolean(1, vendedorAtual.isAdmin());
+                st.setString(2, vendedorAtual.getCpf());
                 st.executeUpdate();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
-            System.out.println("Status de admin atualizado: " + (contaVendedorAtual.isAdmin() ? "Admin" : "Vendedor comum") + "\n");
+            System.out.println("Status de admin atualizado: " + (vendedorAtual.isAdmin() ? "Admin" : "Vendedor comum") + "\n");
         }
     }
 
@@ -507,9 +507,9 @@ public class Locadora {
         System.out.println("Filme não encontrado!\n");
     }
 
-    public void RemoverVendedor(ContaVendedor contaVendedorAtual) {
+    public void RemoverVendedor(Vendedor vendedorAtual) {
         System.out.println("\n======== VENDEDORES CADASTRADOS ========");
-        for (ContaVendedor v : vendedores) {
+        for (Vendedor v : vendedores) {
             System.out.println("  Nome   : " + v.getNome());
             System.out.println("  CPF    : " + v.getCpf());
             System.out.println("  Salário: R$ " + v.getSalario());
@@ -520,7 +520,7 @@ public class Locadora {
         System.out.print("Informe o CPF do vendedor: ");
         String busca = Menu.scanCPF();
 
-        if (contaVendedorAtual.getCpf().equals(busca)) {
+        if (vendedorAtual.getCpf().equals(busca)) {
             System.out.println("Apenas seus superiores podem excluir sua conta.\n");
             return;
         }
@@ -548,14 +548,14 @@ public class Locadora {
     }
 
     public void verificaMultas() {
-        for (ContaCliente contaCliente : contaClientes) {
-            for (Emprestimo emp : contaCliente.getEmprestimos()) {
+        for (Cliente cliente : clientes) {
+            for (Emprestimo emp : cliente.getEmprestimos()) {
                 if (emp.getDevolvido() == null && LocalDate.now().isAfter(emp.getDevolucao())) {
 
                     float valor = ChronoUnit.DAYS.between(emp.getDevolucao(), LocalDate.now());
                     Multa multaExistente = null;
 
-                    for (Multa mul : contaCliente.getMultas()) {
+                    for (Multa mul : cliente.getMultas()) {
                         if (mul.getIdEmprestimo() == emp.getIdEmprestimo()) {
                             multaExistente = mul;
                             break;
@@ -573,7 +573,7 @@ public class Locadora {
                             System.out.println("Erro ao atualizar multa!");
                         }
                     } else if (multaExistente == null) {
-                        Multa novaMulta = new Multa(emp.getIdEmprestimo(), valor, LocalDate.now(), contaCliente.getCpf());
+                        Multa novaMulta = new Multa(emp.getIdEmprestimo(), valor, LocalDate.now(), cliente.getCpf());
                         String sql = "INSERT INTO Multa (Valor, Data, Locadora_CNPJ, Emprestimo_Id) VALUES (?, ?, ?, ?)";
                         try (PreparedStatement st = bd.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
                             st.setFloat(1, valor);
@@ -587,7 +587,7 @@ public class Locadora {
                         } catch (SQLException e) {
                             System.out.println("Erro ao inserir multa!");
                         }
-                        contaCliente.addMulta(novaMulta);
+                        cliente.addMulta(novaMulta);
                     }
                 }
             }
