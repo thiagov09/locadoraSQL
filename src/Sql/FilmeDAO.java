@@ -77,6 +77,24 @@ public class FilmeDAO {
         }
     }
 
+    public void atualizar(Filme filme, String genero) {
+        String sql = "UPDATE Filme SET Titulo = ?, Ano = ?, Diretor = ?, Genero = ?, Classificacao = ?, Quantidade = ?, Disponivel = ? WHERE Id = ?";
+        try (PreparedStatement st = bd.prepareStatement(sql)) {
+            st.setString(1, filme.getTitulo());
+            st.setInt(2, filme.getAnoLancamento());
+            st.setString(3, filme.getDiretor());
+            st.setString(4, genero);
+            st.setString(5, filme.getClassificacao());
+            st.setInt(6, filme.getQuantidade());
+            st.setInt(7, filme.getDisponivel());
+            st.setInt(8, filme.getIdFilme());
+            st.executeUpdate();
+            System.out.println("Filme atualizado com sucesso!");
+        } catch (SQLException e) {
+            System.out.println("Erro ao atualizar filme!");
+        }
+    }
+
     public void deletar(int idFilme) {
         String sql = "DELETE FROM Filme WHERE Id = ?";
         try (PreparedStatement st = bd.prepareStatement(sql)) {

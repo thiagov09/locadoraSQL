@@ -44,4 +44,28 @@ public class EmprestimoDAO {
             System.out.println("Erro SQL ao carregar empréstimos!");
         }
     }
+
+    public void deletar(int idEmprestimo) {
+        String checkSql = "SELECT Devolvido FROM Emprestimo WHERE Id = ?";
+        try (PreparedStatement check = bd.prepareStatement(checkSql)) {
+            check.setInt(1, idEmprestimo);
+            try (ResultSet rs = check.executeQuery()) {
+                if (rs.next() && rs.getDate("Devolvido") == null) {
+                    System.out.println("Não é possível deletar: empréstimo ainda não devolvido!");
+                    return;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Erro ao verificar empréstimo!");
+            return;
+        }
+        String sql = "DELETE FROM Emprestimo WHERE Id = ?";
+        try (PreparedStatement st = bd.prepareStatement(sql)) {
+            st.setInt(1, idEmprestimo);
+            st.executeUpdate();
+            System.out.println("Empréstimo removido com sucesso!");
+        } catch (SQLException e) {
+            System.out.println("Erro ao remover empréstimo!");
+        }
+    }
 }

@@ -67,4 +67,53 @@ public class ClienteDAO {
             System.out.println("Erro ao vincular cliente à locadora!");
         }
     }
+
+    public void atualizarConta(String cpf, String novoNome, String novaSenha) {
+        String sql = "UPDATE Cliente SET Nome = ?, Senha = ? WHERE CPF = ?";
+        try (PreparedStatement st = bd.prepareStatement(sql)) {
+            st.setString(1, novoNome);
+            st.setInt(2, novaSenha.hashCode());
+            st.setString(3, cpf);
+            st.executeUpdate();
+            System.out.println("Conta atualizada com sucesso!");
+        } catch (SQLException e) {
+            System.out.println("Erro ao atualizar conta!");
+        }
+    }
+
+    public void mostrarInformacoesMultas(String cpf) {
+        String sql = """
+        SELECT f.Titulo, e.Data, e.Devolucao, e.Devolvido,
+               m.Valor, m.DataPagamento
+        FROM Emprestimo e
+        INNER JOIN Multa m ON e.Id = m.Emprestimo_Id
+        INNER JOIN Filme f ON f.Id = e.Filme_Id
+        WHERE e.Cliente_CPF = ?
+        """;
+
+        try (PreparedStatement st = bd.prepareStatement(sql)) {
+            st.setString(1, cpf);
+            try (ResultSet rs = st.executeQuery()) {
+                boolean temRegistro = false;
+                while (rs.next()) {
+                    temRegistro = true;
+                    boolean devolvido     = rs.getDate("Devolvido") != null;
+                    boolean multaPaga     = rs.getDate("DataPagamento") != null;
+
+                    System.out.println("======= Histórico de Multa =======");
+                    System.out.println("Filme:              " + rs.getString("Titulo"));
+                    System.out.println("Data de Empréstimo: " + rs.getDate("Data"));
+                    System.out.println("Prazo de Devolução: " + rs.getDate("Devolucao"));
+                    System.out.println("Devolvido:          " + (devolvido ? rs.getDate("Devolvido") : "❌ Não devolvido"));
+                    System.out.println("Valor da Multa:     R$ " + rs.getFloat("Valor"));
+                    System.out.println("Multa paga:         " + (multaPaga ? "✅ " + rs.getDate("DataPagamento") : "❌ Pendente"));
+                    System.out.println("----------------------------------");
+                }
+                if (!temRegistro) System.out.println("Nenhuma multa encontrada.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Erro SQL ao carregar multas!");
+            e.printStackTrace();
+        }
+    }
 }

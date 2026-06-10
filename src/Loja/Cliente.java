@@ -6,7 +6,7 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Scanner;
-
+import Sql.ClienteDAO;
 
 public class Cliente extends Conta {
     private ArrayList<Emprestimo> emprestimos = new ArrayList<>();
@@ -213,5 +213,8 @@ public class Cliente extends Conta {
         } else {
             System.out.println("✅ Sem multas pendentes!");
         }
+    }
+    public void mostrarInformacoesMultas(ClienteDAO clienteDAO) {
+        clienteDAO.mostrarInformacoesMultas(this.getCpf());
     }
 }

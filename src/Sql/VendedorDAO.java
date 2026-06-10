@@ -77,4 +77,58 @@ public class VendedorDAO {
             throw new RuntimeException(e);
         }
     }
+
+    public void atualizarVendedor(String cpf, String novoNome, float novoSalario) {
+        String sql = "UPDATE Vendedor SET Nome = ?, Salario = ? WHERE CPF = ?";
+        try (PreparedStatement st = bd.prepareStatement(sql)) {
+            st.setString(1, novoNome);
+            st.setFloat(2, novoSalario);
+            st.setString(3, cpf);
+            st.executeUpdate();
+            System.out.println("Vendedor atualizado com sucesso!");
+        } catch (SQLException e) {
+            System.out.println("Erro ao atualizar vendedor!");
+        }
+    }
+
+    public void deletarCliente(String cpf) {
+        String sql = "DELETE FROM Cliente WHERE CPF = ?";
+        try (PreparedStatement st = bd.prepareStatement(sql)) {
+            st.setString(1, cpf);
+            st.executeUpdate();
+            System.out.println("Cliente removido com sucesso!");
+        } catch (SQLException e) {
+            System.out.println("Erro ao remover cliente!");
+        }
+    }
+
+    public void selectTudo(String cnpj) {
+        String[] queries = {
+            "SELECT * FROM Locadora WHERE CNPJ = ?",
+            "SELECT v.* FROM Vendedor v WHERE v.Locadora_CNPJ = ?",
+            "SELECT c.* FROM Cliente c JOIN Cliente_da_Locadora cl ON c.CPF = cl.Cliente_CPF WHERE cl.Locadora_CNPJ = ?",
+            "SELECT f.* FROM Filme f WHERE f.Locadora_CNPJ = ?",
+            "SELECT e.* FROM Emprestimo e WHERE e.Locadora_CNPJ = ?",
+            "SELECT m.* FROM Multa m WHERE m.Locadora_CNPJ = ?"
+        };
+        String[] nomes = { "LOCADORA", "VENDEDORES", "CLIENTES", "FILMES", "EMPRÉSTIMOS", "MULTAS" };
+
+        for (int i = 0; i < queries.length; i++) {
+            System.out.println("\n===== " + nomes[i] + " =====");
+            try (PreparedStatement st = bd.prepareStatement(queries[i])) {
+                st.setString(1, cnpj);
+                try (ResultSet rs = st.executeQuery()) {
+                    ResultSetMetaData meta = rs.getMetaData();
+                    int cols = meta.getColumnCount();
+                    while (rs.next()) {
+                        for (int c = 1; c <= cols; c++)
+                            System.out.print(meta.getColumnName(c) + ": " + rs.getString(c) + "  ");
+                        System.out.println();
+                    }
+                }
+            } catch (SQLException e) {
+                System.out.println("Erro ao exibir " + nomes[i] + "!");
+            }
+        }
+    }
 }

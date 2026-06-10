@@ -3,6 +3,7 @@ package Programa;
 import Loja.*;
 import Sql.BD;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.InputMismatchException;
@@ -114,6 +115,7 @@ public class Menu {
             addOption("Alugar filme");
             addOption("Devolver filme");
             addOption("Pagar / conferir multa");
+            addOption("Histórico de Multas");
             verificarOption();
 
             switch (option) {
@@ -131,6 +133,9 @@ public class Menu {
                     locadoraAtual.verificaMultas();
                     clienteAtual.conferirMulta(locadoraAtual);
                     break;
+                case 5:
+                    clienteAtual.mostrarInformacoesMultas(locadoraAtual.getClienteDAO());
+                    break;
             }
         }
         sessao.encerrar();
@@ -138,42 +143,46 @@ public class Menu {
         System.out.println("Retornando ao menu principal\n");
     }
 
-    public static void menuVendedor(Vendedor vendedorAtual){
+    public static void menuVendedor(Vendedor vendedorAtual) throws SQLException {
         TempoSessao sessao = new TempoSessao();
         Thread s = new Thread(sessao);
         s.start();
 
         while(vendedorAtual.isLogado()) {
             reset();
-            addOption("Deslogar da conta");
-            addOption("Adicionar filme");
-            addOption("Remover filme");
+            addOption("Deslogar da conta");               // 1
+            addOption("Adicionar filme");                  // 2
+            addOption("Remover filme");                    // 3
+            addOption("Editar filme");                     // 4
+            addOption("Editar cliente");                   // 5
+            addOption("Deletar cliente");                  // 6
+            addOption("Deletar empréstimo");               // 7
+            addOption("Deletar multa");                    // 8
+            addOption("Ver todas as tabelas");             // 9
+            addOption("Consultar locadora e vendedores");  // 10
             if (vendedorAtual.isAdmin()) {
-                addOption("Adicionar vendedor");
-                addOption("Remover vendedor");
-                addOption("Tornar vendedor admin / remover admin");
+                addOption("Adicionar vendedor");           // 11
+                addOption("Remover vendedor");             // 12
+                addOption("Tornar vendedor admin / remover admin"); // 13
+                addOption("Editar locadora");              // 14
             }
             verificarOption();
 
             switch (option) {
-                case 1:
-                    vendedorAtual.deslogar();
-                    break;
-                case 2:
-                    locadoraAtual.addFilme();
-                    break;
-                case 3:
-                    locadoraAtual.RemoverFilme();
-                    break;
-                case 4:
-                    locadoraAtual.addVendedor();
-                    break;
-                case 5:
-                    locadoraAtual.RemoverVendedor(vendedorAtual);
-                    break;
-                case 6:
-                    locadoraAtual.promoverVendedor(vendedorAtual);
-                    break;
+                case 1  -> vendedorAtual.deslogar();
+                case 2  -> locadoraAtual.addFilme();
+                case 3  -> locadoraAtual.RemoverFilme();
+                case 4  -> locadoraAtual.editarFilme();
+                case 5  -> locadoraAtual.editarCliente();
+                case 6  -> locadoraAtual.deletarCliente();
+                case 7  -> locadoraAtual.deletarEmprestimo();
+                case 8  -> locadoraAtual.deletarMulta();
+                case 9  -> locadoraAtual.verTodasTabelas();
+                case 10 -> locadoraAtual.mostrarInformacoesDaLocadora();
+                case 11 -> locadoraAtual.addVendedor();
+                case 12 -> locadoraAtual.RemoverVendedor(vendedorAtual);
+                case 13 -> locadoraAtual.promoverVendedor(vendedorAtual);
+                case 14 -> locadoraAtual.editarLocadora();
             }
         }
         sessao.encerrar();

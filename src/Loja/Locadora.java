@@ -1,6 +1,7 @@
 package Loja;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Scanner;
@@ -131,6 +132,8 @@ public class Locadora {
                 }
             } catch (NullPointerException e) {
                 System.out.println("Conta não encontrada!");
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
 
             tentativas++;
@@ -395,7 +398,126 @@ public class Locadora {
         }
     }
 
+    public void mostrarInformacoesDaLocadora() {
+        locadoraDAO.mostrarInformacoesLocadora(this.CNPJ);
+    }
+
+    public void verTodasTabelas() {
+        vendedorDAO.selectTudo(CNPJ);
+    }
+
+    public void editarCliente() {
+        String cpf = Menu.scanCPF();
+        System.out.print("Novo nome: ");
+        String nome = sc.nextLine();
+        while (nome.isBlank()) { System.out.print("Nome inválido! Insira novamente: "); nome = sc.nextLine(); }
+        System.out.print("Nova senha: ");
+        String senha = sc.nextLine();
+        while (senha.isBlank()) { System.out.print("Senha inválida! Insira novamente: "); senha = sc.nextLine(); }
+        clienteDAO.atualizarConta(cpf, nome, senha);
+    }
+
+    public void editarFilme() {
+        System.out.println("\n======== FILMES CADASTRADOS ========");
+        for (Filme f : filmes) f.mostra();
+        System.out.println("====================================\n");
+        System.out.print("ID do filme a editar: ");
+        int id;
+        try { id = Integer.parseInt(sc.nextLine().trim()); }
+        catch (NumberFormatException e) { System.out.println("ID inválido!"); return; }
+
+        Filme alvo = null;
+        for (Filme f : filmes) { if (f.getIdFilme() == id) { alvo = f; break; } }
+        if (alvo == null) { System.out.println("Filme não encontrado!"); return; }
+
+        System.out.print("Novo título (atual: " + alvo.getTitulo() + "): ");
+        String titulo = sc.nextLine();
+        if (titulo.isBlank()) titulo = alvo.getTitulo();
+
+        System.out.print("Novo diretor (atual: " + alvo.getDiretor() + "): ");
+        String diretor = sc.nextLine();
+        if (diretor.isBlank()) diretor = alvo.getDiretor();
+
+        System.out.print("Novo gênero (acao/comedia/suspense/terror/romance, atual mantido se vazio): ");
+        String genero = sc.nextLine().toLowerCase();
+        if (genero.isBlank()) genero = alvo.getClass().getSimpleName().replace("Filme", "").toLowerCase();
+
+        System.out.print("Nova classificação (atual: " + alvo.getClassificacao() + "): ");
+        String classif = sc.nextLine();
+        if (classif.isBlank()) classif = alvo.getClassificacao();
+
+        int anoAtual = LocalDate.now().getYear();
+        int ano = alvo.getAnoLancamento();
+        System.out.print("Novo ano (atual: " + ano + ", enter para manter): ");
+        String anoStr = sc.nextLine().trim();
+        if (!anoStr.isBlank()) {
+            try { ano = Integer.parseInt(anoStr); }
+            catch (NumberFormatException e) { System.out.println("Ano inválido, mantido o anterior."); ano = alvo.getAnoLancamento(); }
+        }
+
+        Filme atualizado = switch (genero) {
+            case "acao"     -> new FilmeAcao(titulo, classif, diretor, ano, alvo.getQuantidade(), alvo.getDisponivel());
+            case "comedia"  -> new FilmeComedia(titulo, classif, diretor, ano, alvo.getQuantidade(), alvo.getDisponivel());
+            case "suspense" -> new FilmeSuspense(titulo, classif, diretor, ano, alvo.getQuantidade(), alvo.getDisponivel());
+            case "romance"  -> new FilmeRomance(titulo, classif, diretor, ano, alvo.getQuantidade(), alvo.getDisponivel());
+            case "terror"   -> new FilmeTerror(titulo, classif, diretor, ano, alvo.getQuantidade(), alvo.getDisponivel());
+            default -> { System.out.println("Gênero inválido, edição cancelada."); yield null; }
+        };
+        if (atualizado == null) return;
+        atualizado.setIdFilme(id);
+        filmeDAO.atualizar(atualizado, genero);
+        filmes.set(filmes.indexOf(alvo), atualizado);
+    }
+
+    public void editarLocadora() {
+        System.out.print("Novo nome da locadora (atual: " + nome + "): ");
+        String novoNome = sc.nextLine();
+        if (novoNome.isBlank()) novoNome = nome;
+        System.out.print("Nova cidade (atual: " + cidade + "): ");
+        String novaCidade = sc.nextLine();
+        if (novaCidade.isBlank()) novaCidade = cidade;
+        locadoraDAO.atualizar(CNPJ, novoNome, novaCidade);
+        nome   = novoNome;
+        cidade = novaCidade;
+    }
+
+    public void deletarCliente() {
+        System.out.println("\n======== CLIENTES CADASTRADOS ========");
+        for (Cliente c : clientes) System.out.println("  " + c.getNome() + " - " + c.getCpf());
+        System.out.println("======================================\n");
+        String cpf = Menu.scanCPF();
+        for (int i = 0; i < clientes.size(); i++) {
+            if (clientes.get(i).getCpf().equals(cpf)) {
+                vendedorDAO.deletarCliente(cpf);
+                clientes.remove(i);
+                return;
+            }
+        }
+        System.out.println("Cliente não encontrado!");
+    }
+
+    public void deletarEmprestimo() {
+        System.out.print("ID do empréstimo a deletar: ");
+        try {
+            int id = Integer.parseInt(sc.nextLine().trim());
+            emprestimoDAO.deletar(id);
+        } catch (NumberFormatException e) {
+            System.out.println("ID inválido!");
+        }
+    }
+
+    public void deletarMulta() {
+        System.out.print("ID da multa a deletar: ");
+        try {
+            int id = Integer.parseInt(sc.nextLine().trim());
+            multaDAO.deletar(id);
+        } catch (NumberFormatException e) {
+            System.out.println("ID inválido!");
+        }
+    }
+
     public ArrayList<Filme> getFilmes() { return filmes; }
     public String getNome()             { return nome; }
     public String getCNPJ()             { return CNPJ; }
+    public ClienteDAO getClienteDAO()   { return clienteDAO; }
 }

@@ -73,4 +73,28 @@ public class MultaDAO {
             System.out.println("Erro ao atualizar multa!");
         }
     }
+
+    public void deletar(int idMulta) {
+        String checkSql = "SELECT DataPagamento FROM Multa WHERE Id = ?";
+        try (PreparedStatement check = bd.prepareStatement(checkSql)) {
+            check.setInt(1, idMulta);
+            try (ResultSet rs = check.executeQuery()) {
+                if (rs.next() && rs.getDate("DataPagamento") == null) {
+                    System.out.println("Não é possível deletar: multa ainda não paga!");
+                    return;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Erro ao verificar multa!");
+            return;
+        }
+        String sql = "DELETE FROM Multa WHERE Id = ?";
+        try (PreparedStatement st = bd.prepareStatement(sql)) {
+            st.setInt(1, idMulta);
+            st.executeUpdate();
+            System.out.println("Multa removida com sucesso!");
+        } catch (SQLException e) {
+            System.out.println("Erro ao remover multa!");
+        }
+    }
 }
