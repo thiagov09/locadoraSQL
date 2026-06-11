@@ -15,11 +15,12 @@ public class EmprestimoDAO {
     }
 
     public void carregarParaClientes(ArrayList<Cliente> clientes, String cnpj) {
+        BD.conectar();
         String sql = "SELECT Id, Data, Devolvido, Devolucao, Cliente_CPF, Filme_Id " +
                      "FROM Emprestimo WHERE Locadora_CNPJ = ?";
-        try (PreparedStatement st = bd.prepareStatement(sql)) {
-            st.setString(1, cnpj);
-            try (ResultSet rs = st.executeQuery()) {
+        try (PreparedStatement pst = bd.prepareStatement(sql)) {
+            pst.setString(1, cnpj);
+            try (ResultSet rs = pst.executeQuery()) {
                 while (rs.next()) {
                     String cpfCliente = rs.getString("Cliente_CPF");
                     for (Cliente cliente : clientes) {
@@ -46,10 +47,11 @@ public class EmprestimoDAO {
     }
 
     public void deletar(int idEmprestimo) {
+        BD.conectar();
         String checkSql = "SELECT Devolvido FROM Emprestimo WHERE Id = ?";
-        try (PreparedStatement check = bd.prepareStatement(checkSql)) {
-            check.setInt(1, idEmprestimo);
-            try (ResultSet rs = check.executeQuery()) {
+        try (PreparedStatement pst = bd.prepareStatement(checkSql)) {
+            pst.setInt(1, idEmprestimo);
+            try (ResultSet rs = pst.executeQuery()) {
                 if (rs.next() && rs.getDate("Devolvido") == null) {
                     System.out.println("Não é possível deletar: empréstimo ainda não devolvido!");
                     return;
@@ -60,9 +62,9 @@ public class EmprestimoDAO {
             return;
         }
         String sql = "DELETE FROM Emprestimo WHERE Id = ?";
-        try (PreparedStatement st = bd.prepareStatement(sql)) {
-            st.setInt(1, idEmprestimo);
-            st.executeUpdate();
+        try (PreparedStatement pst = bd.prepareStatement(sql)) {
+            pst.setInt(1, idEmprestimo);
+            pst.executeUpdate();
             System.out.println("Empréstimo removido com sucesso!");
         } catch (SQLException e) {
             System.out.println("Erro ao remover empréstimo!");

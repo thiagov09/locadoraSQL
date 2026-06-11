@@ -10,10 +10,11 @@ public class LocadoraDAO {
     }
 
     public String[] buscarDados(String cnpj) {
+        BD.conectar();
         String sql = "SELECT CNPJ, Nome, Cidade FROM Locadora WHERE CNPJ = ?";
-        try (PreparedStatement st = bd.prepareStatement(sql)) {
-            st.setString(1, cnpj);
-            try (ResultSet rs = st.executeQuery()) {
+        try (PreparedStatement pst = bd.prepareStatement(sql)) {
+            pst.setString(1, cnpj);
+            try (ResultSet rs = pst.executeQuery()) {
                 if (rs.next()) {
                     return new String[]{
                         rs.getString("CNPJ"),
@@ -29,19 +30,21 @@ public class LocadoraDAO {
     }
 
     public void atualizar(String cnpj, String novoNome, String novaCidade) {
+        BD.conectar();
         String sql = "UPDATE Locadora SET Nome = ?, Cidade = ? WHERE CNPJ = ?";
-        try (PreparedStatement st = bd.prepareStatement(sql)) {
-            st.setString(1, novoNome);
-            st.setString(2, novaCidade);
-            st.setString(3, cnpj);
-            st.executeUpdate();
+        try (PreparedStatement pst = bd.prepareStatement(sql)) {
+            pst.setString(1, novoNome);
+            pst.setString(2, novaCidade);
+            pst.setString(3, cnpj);
+            pst.executeUpdate();
             System.out.println("Locadora atualizada com sucesso!");
         } catch (SQLException e) {
             System.out.println("Erro ao atualizar locadora!");
         }
     }
 
-    public void mostrarInformacoesLocadora(String cnpj) {  // sem static
+    public void mostrarInformacoesLocadora(String cnpj) {
+        BD.conectar();
         String sql = """
         SELECT l.Nome AS NomeLocadora, l.Cidade,
                v.CPF, v.Nome AS NomeVendedor,
@@ -51,9 +54,9 @@ public class LocadoraDAO {
         WHERE l.CNPJ = ?
         """;
 
-        try (PreparedStatement st = bd.prepareStatement(sql)) {
-            st.setString(1, cnpj);
-            try (ResultSet rs = st.executeQuery()) {
+        try (PreparedStatement pst = bd.prepareStatement(sql)) {
+            pst.setString(1, cnpj);
+            try (ResultSet rs = pst.executeQuery()) {
                 while (rs.next()) {
                     System.out.println("Locadora : "         + rs.getString("NomeLocadora"));
                     System.out.println("Cidade : "           + rs.getString("Cidade"));
@@ -67,7 +70,6 @@ public class LocadoraDAO {
             }
         } catch (SQLException e) {
             System.out.println("Erro SQL ao carregar informações da locadora!");
-            e.printStackTrace();
         }
     }
 }

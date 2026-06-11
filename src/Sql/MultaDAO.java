@@ -16,6 +16,7 @@ public class MultaDAO {
     }
 
     public void carregarParaClientes(ArrayList<Cliente> clientes, String cnpj) {
+        BD.conectar();
         String sql = "SELECT Id, Valor, Data, DataPagamento, Emprestimo_Id " +
                      "FROM Multa WHERE Locadora_CNPJ = ?";
         try (PreparedStatement st = bd.prepareStatement(sql)) {
@@ -48,14 +49,15 @@ public class MultaDAO {
     }
 
     public void inserir(Multa multa, String cnpj) {
+        BD.conectar();
         String sql = "INSERT INTO Multa (Valor, Data, Locadora_CNPJ, Emprestimo_Id) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement st = bd.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            st.setFloat(1, multa.getValor());
-            st.setDate(2, Date.valueOf(LocalDate.now()));
-            st.setString(3, cnpj);
-            st.setInt(4, multa.getIdEmprestimo());
-            st.executeUpdate();
-            try (ResultSet keys = st.getGeneratedKeys()) {
+        try (PreparedStatement pst = bd.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            pst.setFloat(1, multa.getValor());
+            pst.setDate(2, Date.valueOf(LocalDate.now()));
+            pst.setString(3, cnpj);
+            pst.setInt(4, multa.getIdEmprestimo());
+            pst.executeUpdate();
+            try (ResultSet keys = pst.getGeneratedKeys()) {
                 if (keys.next()) multa.setId(keys.getInt(1));
             }
         } catch (SQLException e) {
@@ -64,21 +66,23 @@ public class MultaDAO {
     }
 
     public void atualizarValor(int idMulta, float novoValor) {
+        BD.conectar();
         String sql = "UPDATE Multa SET Valor = ? WHERE Id = ?";
-        try (PreparedStatement st = bd.prepareStatement(sql)) {
-            st.setFloat(1, novoValor);
-            st.setInt(2, idMulta);
-            st.executeUpdate();
+        try (PreparedStatement pst = bd.prepareStatement(sql)) {
+            pst.setFloat(1, novoValor);
+            pst.setInt(2, idMulta);
+            pst.executeUpdate();
         } catch (SQLException e) {
             System.out.println("Erro ao atualizar multa!");
         }
     }
 
     public void deletar(int idMulta) {
+        BD.conectar();
         String checkSql = "SELECT DataPagamento FROM Multa WHERE Id = ?";
-        try (PreparedStatement check = bd.prepareStatement(checkSql)) {
-            check.setInt(1, idMulta);
-            try (ResultSet rs = check.executeQuery()) {
+        try (PreparedStatement pst = bd.prepareStatement(checkSql)) {
+            pst.setInt(1, idMulta);
+            try (ResultSet rs = pst.executeQuery()) {
                 if (rs.next() && rs.getDate("DataPagamento") == null) {
                     System.out.println("Não é possível deletar: multa ainda não paga!");
                     return;
@@ -89,9 +93,9 @@ public class MultaDAO {
             return;
         }
         String sql = "DELETE FROM Multa WHERE Id = ?";
-        try (PreparedStatement st = bd.prepareStatement(sql)) {
-            st.setInt(1, idMulta);
-            st.executeUpdate();
+        try (PreparedStatement pst = bd.prepareStatement(sql)) {
+            pst.setInt(1, idMulta);
+            pst.executeUpdate();
             System.out.println("Multa removida com sucesso!");
         } catch (SQLException e) {
             System.out.println("Erro ao remover multa!");

@@ -51,7 +51,7 @@ public class Cliente extends Conta {
                     return;
                 }
                 multas.get(i).setDataDePagamento(LocalDate.now());
-                System.out.println("✅ Multa paga!");
+                System.out.println("Multa paga!");
                 return;
             }
         }
@@ -61,7 +61,7 @@ public class Cliente extends Conta {
     public void alugarFilme(Locadora locadoraAtual, Connection bd) {
         for (Multa multa : multas) {
             if (multa.getDataDePagamento() == null) {
-                System.out.println("⚠️  Você possui multas pendentes. Quite-as antes de alugar.");
+                System.out.println("Você possui multas pendentes. Quite-as antes de alugar.");
                 return;
             }
         }
@@ -113,7 +113,7 @@ public class Cliente extends Conta {
                 }
 
                 this.addEmprestimo(emprestimoPlaceholder);
-                System.out.println("✅ Filme alugado com sucesso! Devolva até: " + emprestimoPlaceholder.getDevolucao());
+                System.out.println("Filme alugado com sucesso! Devolva até: " + emprestimoPlaceholder.getDevolucao());
                 return;
             }
         }
@@ -180,7 +180,7 @@ public class Cliente extends Conta {
                 }
 
                 emp.setDevolvido(LocalDate.now());
-                System.out.println("✅ Filme devolvido com sucesso!");
+                System.out.println("Filme devolvido com sucesso!");
                 return;
             }
         }
@@ -211,9 +211,10 @@ public class Cliente extends Conta {
             }
             pagaMulta(id, BD.getConexao());
         } else {
-            System.out.println("✅ Sem multas pendentes!");
+            System.out.println("Sem multas pendentes!");
         }
     }
+
     public void mostrarInformacoesMultas(ClienteDAO clienteDAO) {
         clienteDAO.mostrarInformacoesMultas(this.getCpf());
     }

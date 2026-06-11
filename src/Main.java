@@ -5,6 +5,7 @@ import Sql.BD;
 
 void main() {
     if(BD.conectar()) {
+        System.out.println("Banco de dados conectado com sucesso!\n");
         Locadora locadoraAtual = new Locadora();
 
         /*

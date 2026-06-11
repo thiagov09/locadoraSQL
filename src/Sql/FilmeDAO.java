@@ -14,12 +14,13 @@ public class FilmeDAO {
     }
 
     public ArrayList<Filme> listarPorLocadora(String cnpj) {
+        BD.conectar();
         ArrayList<Filme> filmes = new ArrayList<>();
         String sql = "SELECT Id, Titulo, Ano, Diretor, Genero, Classificacao, Quantidade, Disponivel " +
                      "FROM Filme WHERE Locadora_CNPJ = ?";
-        try (PreparedStatement st = bd.prepareStatement(sql)) {
-            st.setString(1, cnpj);
-            try (ResultSet rs = st.executeQuery()) {
+        try (PreparedStatement pst = bd.prepareStatement(sql)) {
+            pst.setString(1, cnpj);
+            try (ResultSet rs = pst.executeQuery()) {
                 while (rs.next()) {
                     Filme filme = criarFilmePorGenero(rs);
                     if (filme != null) filmes.add(filme);
@@ -32,6 +33,7 @@ public class FilmeDAO {
     }
 
     private Filme criarFilmePorGenero(ResultSet rs) throws SQLException {
+        BD.conectar();
         String titulo        = rs.getString("Titulo");
         String classificacao = rs.getString("Classificacao");
         String diretor       = rs.getString("Diretor");
@@ -56,19 +58,20 @@ public class FilmeDAO {
     }
 
     public void inserir(Filme filme, String genero, String cnpj) {
+        BD.conectar();
         String sql = "INSERT INTO Filme (Titulo, Ano, Diretor, Genero, Classificacao, Quantidade, Disponivel, Locadora_CNPJ) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement st = bd.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            st.setString(1, filme.getTitulo());
-            st.setInt(2, filme.getAnoLancamento());
-            st.setString(3, filme.getDiretor());
-            st.setString(4, genero);
-            st.setString(5, filme.getClassificacao());
-            st.setInt(6, filme.getQuantidade());
-            st.setInt(7, filme.getDisponivel());
-            st.setString(8, cnpj);
-            st.executeUpdate();
-            try (ResultSet keys = st.getGeneratedKeys()) {
+        try (PreparedStatement pst = bd.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            pst.setString(1, filme.getTitulo());
+            pst.setInt(2, filme.getAnoLancamento());
+            pst.setString(3, filme.getDiretor());
+            pst.setString(4, genero);
+            pst.setString(5, filme.getClassificacao());
+            pst.setInt(6, filme.getQuantidade());
+            pst.setInt(7, filme.getDisponivel());
+            pst.setString(8, cnpj);
+            pst.executeUpdate();
+            try (ResultSet keys = pst.getGeneratedKeys()) {
                 if (keys.next()) filme.setIdFilme(keys.getInt(1));
             }
             System.out.println("Filme inserido com sucesso!");
@@ -78,17 +81,18 @@ public class FilmeDAO {
     }
 
     public void atualizar(Filme filme, String genero) {
+        BD.conectar();
         String sql = "UPDATE Filme SET Titulo = ?, Ano = ?, Diretor = ?, Genero = ?, Classificacao = ?, Quantidade = ?, Disponivel = ? WHERE Id = ?";
-        try (PreparedStatement st = bd.prepareStatement(sql)) {
-            st.setString(1, filme.getTitulo());
-            st.setInt(2, filme.getAnoLancamento());
-            st.setString(3, filme.getDiretor());
-            st.setString(4, genero);
-            st.setString(5, filme.getClassificacao());
-            st.setInt(6, filme.getQuantidade());
-            st.setInt(7, filme.getDisponivel());
-            st.setInt(8, filme.getIdFilme());
-            st.executeUpdate();
+        try (PreparedStatement pst = bd.prepareStatement(sql)) {
+            pst.setString(1, filme.getTitulo());
+            pst.setInt(2, filme.getAnoLancamento());
+            pst.setString(3, filme.getDiretor());
+            pst.setString(4, genero);
+            pst.setString(5, filme.getClassificacao());
+            pst.setInt(6, filme.getQuantidade());
+            pst.setInt(7, filme.getDisponivel());
+            pst.setInt(8, filme.getIdFilme());
+            pst.executeUpdate();
             System.out.println("Filme atualizado com sucesso!");
         } catch (SQLException e) {
             System.out.println("Erro ao atualizar filme!");
@@ -96,10 +100,11 @@ public class FilmeDAO {
     }
 
     public void deletar(int idFilme) {
+        BD.conectar();
         String sql = "DELETE FROM Filme WHERE Id = ?";
-        try (PreparedStatement st = bd.prepareStatement(sql)) {
-            st.setInt(1, idFilme);
-            st.executeUpdate();
+        try (PreparedStatement pst = bd.prepareStatement(sql)) {
+            pst.setInt(1, idFilme);
+            pst.executeUpdate();
         } catch (SQLException e) {
             System.out.println("Erro ao remover filme do banco!");
         }

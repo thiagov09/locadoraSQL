@@ -1,14 +1,11 @@
 package Sql;
 
 import Loja.Cliente;
-import Loja.Emprestimo;
-import Loja.Multa;
 
 import java.sql.*;
-import java.time.LocalDate;
 import java.util.ArrayList;
 
-public class ClienteDAO {
+public class ClienteDAO{
     private final Connection bd;
 
     public ClienteDAO(Connection bd) {
@@ -16,6 +13,7 @@ public class ClienteDAO {
     }
 
     public ArrayList<Cliente> listarPorLocadora(String cnpj) {
+        BD.conectar();
         ArrayList<Cliente> clientes = new ArrayList<>();
         String sql = "SELECT Cliente.CPF, Cliente.Nome, Cliente.Data_de_nascimento, Cliente.Senha " +
                      "FROM Cliente " +
@@ -40,13 +38,14 @@ public class ClienteDAO {
     }
 
     public void inserir(Cliente cliente, String cnpj) {
+        BD.conectar();
         String sql = "INSERT INTO Cliente (CPF, Nome, Data_de_nascimento, Senha) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement st = bd.prepareStatement(sql)) {
-            st.setString(1, cliente.getCpf());
-            st.setString(2, cliente.getNome());
-            st.setDate(3, Date.valueOf(cliente.getDataDeNascimento()));
-            st.setInt(4, cliente.getHashSenha());
-            st.executeUpdate();
+        try (PreparedStatement pst = bd.prepareStatement(sql)) {
+            pst.setString(1, cliente.getCpf());
+            pst.setString(2, cliente.getNome());
+            pst.setDate(3, Date.valueOf(cliente.getDataDeNascimento()));
+            pst.setInt(4, cliente.getHashSenha());
+            pst.executeUpdate();
             vincularLocadora(cliente.getCpf(), cnpj);
             System.out.println("Cliente inserido com sucesso!");
         } catch (SQLIntegrityConstraintViolationException e) {
@@ -59,10 +58,10 @@ public class ClienteDAO {
 
     private void vincularLocadora(String cpfCliente, String cnpj) {
         String sql = "INSERT INTO Cliente_da_Locadora (Locadora_CNPJ, Cliente_CPF) VALUES (?, ?)";
-        try (PreparedStatement st = bd.prepareStatement(sql)) {
-            st.setString(1, cnpj);
-            st.setString(2, cpfCliente);
-            st.executeUpdate();
+        try (PreparedStatement pst = bd.prepareStatement(sql)) {
+            pst.setString(1, cnpj);
+            pst.setString(2, cpfCliente);
+            pst.executeUpdate();
         } catch (SQLException e) {
             System.out.println("Erro ao vincular cliente à locadora!");
         }
@@ -70,11 +69,11 @@ public class ClienteDAO {
 
     public void atualizarConta(String cpf, String novoNome, String novaSenha) {
         String sql = "UPDATE Cliente SET Nome = ?, Senha = ? WHERE CPF = ?";
-        try (PreparedStatement st = bd.prepareStatement(sql)) {
-            st.setString(1, novoNome);
-            st.setInt(2, novaSenha.hashCode());
-            st.setString(3, cpf);
-            st.executeUpdate();
+        try (PreparedStatement pst = bd.prepareStatement(sql)) {
+            pst.setString(1, novoNome);
+            pst.setInt(2, novaSenha.hashCode());
+            pst.setString(3, cpf);
+            pst.executeUpdate();
             System.out.println("Conta atualizada com sucesso!");
         } catch (SQLException e) {
             System.out.println("Erro ao atualizar conta!");
@@ -91,9 +90,9 @@ public class ClienteDAO {
         WHERE e.Cliente_CPF = ?
         """;
 
-        try (PreparedStatement st = bd.prepareStatement(sql)) {
-            st.setString(1, cpf);
-            try (ResultSet rs = st.executeQuery()) {
+        try (PreparedStatement pst = bd.prepareStatement(sql)) {
+            pst.setString(1, cpf);
+            try (ResultSet rs = pst.executeQuery()) {
                 boolean temRegistro = false;
                 while (rs.next()) {
                     temRegistro = true;
@@ -104,16 +103,15 @@ public class ClienteDAO {
                     System.out.println("Filme:              " + rs.getString("Titulo"));
                     System.out.println("Data de Empréstimo: " + rs.getDate("Data"));
                     System.out.println("Prazo de Devolução: " + rs.getDate("Devolucao"));
-                    System.out.println("Devolvido:          " + (devolvido ? rs.getDate("Devolvido") : "❌ Não devolvido"));
+                    System.out.println("Devolvido:          " + (devolvido ? rs.getDate("Devolvido") : "Não devolvido"));
                     System.out.println("Valor da Multa:     R$ " + rs.getFloat("Valor"));
-                    System.out.println("Multa paga:         " + (multaPaga ? "✅ " + rs.getDate("DataPagamento") : "❌ Pendente"));
+                    System.out.println("Multa paga:         " + (multaPaga ? rs.getDate("DataPagamento") : "Pendente"));
                     System.out.println("----------------------------------");
                 }
                 if (!temRegistro) System.out.println("Nenhuma multa encontrada.");
             }
         } catch (SQLException e) {
             System.out.println("Erro SQL ao carregar multas!");
-            e.printStackTrace();
         }
     }
 }

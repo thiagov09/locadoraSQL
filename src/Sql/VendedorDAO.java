@@ -13,12 +13,13 @@ public class VendedorDAO {
     }
 
     public ArrayList<Vendedor> listarPorLocadora(String cnpj) {
+        BD.conectar();
         ArrayList<Vendedor> vendedores = new ArrayList<>();
         String sql = "SELECT CPF, Nome, Data_de_nascimento, Salario, AdminStatus, Senha " +
                      "FROM Vendedor WHERE Locadora_CNPJ = ?";
-        try (PreparedStatement st = bd.prepareStatement(sql)) {
-            st.setString(1, cnpj);
-            try (ResultSet rs = st.executeQuery()) {
+        try (PreparedStatement pst = bd.prepareStatement(sql)) {
+            pst.setString(1, cnpj);
+            try (ResultSet rs = pst.executeQuery()) {
                 while (rs.next()) {
                     vendedores.add(new Vendedor(
                             rs.getString("Nome"),
@@ -37,17 +38,18 @@ public class VendedorDAO {
     }
 
     public void inserir(Vendedor vendedor, String cnpj) {
+        BD.conectar();
         String sql = "INSERT INTO Vendedor (CPF, Nome, Salario, Data_de_nascimento, Senha, Locadora_CNPJ, AdminStatus) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement st = bd.prepareStatement(sql)) {
-            st.setString(1, vendedor.getCpf());
-            st.setString(2, vendedor.getNome());
-            st.setFloat(3, vendedor.getSalario());
-            st.setDate(4, Date.valueOf(vendedor.getDataDeNascimento()));
-            st.setInt(5, vendedor.getHashSenha());
-            st.setString(6, cnpj);
-            st.setBoolean(7, vendedor.isAdmin());
-            st.executeUpdate();
+        try (PreparedStatement pst = bd.prepareStatement(sql)) {
+            pst.setString(1, vendedor.getCpf());
+            pst.setString(2, vendedor.getNome());
+            pst.setFloat(3, vendedor.getSalario());
+            pst.setDate(4, Date.valueOf(vendedor.getDataDeNascimento()));
+            pst.setInt(5, vendedor.getHashSenha());
+            pst.setString(6, cnpj);
+            pst.setBoolean(7, vendedor.isAdmin());
+            pst.executeUpdate();
             System.out.println("Vendedor inserido com sucesso!");
         } catch (SQLIntegrityConstraintViolationException e) {
             System.out.println("Vendedor já cadastrado!");
@@ -57,45 +59,35 @@ public class VendedorDAO {
         }
     }
 
-    public void deletar(String cpf) {
-        String sql = "DELETE FROM Vendedor WHERE CPF = ?";
-        try (PreparedStatement st = bd.prepareStatement(sql)) {
-            st.setString(1, cpf);
-            st.executeUpdate();
-        } catch (SQLException e) {
-            System.out.println("Erro ao remover vendedor do banco!");
-        }
-    }
-
     public void atualizarAdmin(String cpf, boolean status) {
+        BD.conectar();
         String sql = "UPDATE Vendedor SET AdminStatus = ? WHERE CPF = ?";
-        try (PreparedStatement st = bd.prepareStatement(sql)) {
-            st.setBoolean(1, status);
-            st.setString(2, cpf);
-            st.executeUpdate();
+        try (PreparedStatement pst = bd.prepareStatement(sql)) {
+            pst.setBoolean(1, status);
+            pst.setString(2, cpf);
+            pst.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void atualizarVendedor(String cpf, String novoNome, float novoSalario) {
-        String sql = "UPDATE Vendedor SET Nome = ?, Salario = ? WHERE CPF = ?";
-        try (PreparedStatement st = bd.prepareStatement(sql)) {
-            st.setString(1, novoNome);
-            st.setFloat(2, novoSalario);
-            st.setString(3, cpf);
-            st.executeUpdate();
-            System.out.println("Vendedor atualizado com sucesso!");
+    public void deletar(String cpf) {
+        BD.conectar();
+        String sql = "DELETE FROM Vendedor WHERE CPF = ?";
+        try (PreparedStatement pst = bd.prepareStatement(sql)) {
+            pst.setString(1, cpf);
+            pst.executeUpdate();
         } catch (SQLException e) {
-            System.out.println("Erro ao atualizar vendedor!");
+            System.out.println("Erro ao remover vendedor do banco!");
         }
     }
 
     public void deletarCliente(String cpf) {
+        BD.conectar();
         String sql = "DELETE FROM Cliente WHERE CPF = ?";
-        try (PreparedStatement st = bd.prepareStatement(sql)) {
-            st.setString(1, cpf);
-            st.executeUpdate();
+        try (PreparedStatement pst = bd.prepareStatement(sql)) {
+            pst.setString(1, cpf);
+            pst.executeUpdate();
             System.out.println("Cliente removido com sucesso!");
         } catch (SQLException e) {
             System.out.println("Erro ao remover cliente!");
@@ -103,6 +95,7 @@ public class VendedorDAO {
     }
 
     public void selectTudo(String cnpj) {
+        BD.conectar();
         String[] queries = {
             "SELECT * FROM Locadora WHERE CNPJ = ?",
             "SELECT v.* FROM Vendedor v WHERE v.Locadora_CNPJ = ?",
@@ -115,9 +108,9 @@ public class VendedorDAO {
 
         for (int i = 0; i < queries.length; i++) {
             System.out.println("\n===== " + nomes[i] + " =====");
-            try (PreparedStatement st = bd.prepareStatement(queries[i])) {
-                st.setString(1, cnpj);
-                try (ResultSet rs = st.executeQuery()) {
+            try (PreparedStatement pst = bd.prepareStatement(queries[i])) {
+                pst.setString(1, cnpj);
+                try (ResultSet rs = pst.executeQuery()) {
                     ResultSetMetaData meta = rs.getMetaData();
                     int cols = meta.getColumnCount();
                     while (rs.next()) {
