@@ -26,7 +26,7 @@ CREATE TABLE Filme (
     Disponivel TINYINT NOT NULL,
     Locadora_CNPJ VARCHAR(18) NOT NULL,
 
-    FOREIGN KEY (Locadora_CNPJ) REFERENCES Locadora(CNPJ)
+    FOREIGN KEY (Locadora_CNPJ) REFERENCES Locadora(CNPJ)  ON DELETE CASCADE
 );
 
 CREATE TABLE Vendedor (
@@ -39,7 +39,7 @@ CREATE TABLE Vendedor (
     Locadora_CNPJ VARCHAR(18) NOT NULL,
 
 
-    FOREIGN KEY (Locadora_CNPJ) REFERENCES Locadora(CNPJ)
+    FOREIGN KEY (Locadora_CNPJ) REFERENCES Locadora(CNPJ) ON DELETE CASCADE
 );
 
 CREATE TABLE Emprestimo (
@@ -52,8 +52,8 @@ CREATE TABLE Emprestimo (
     Filme_Id INT,
     NomeFilme VARCHAR(40),
 
-    FOREIGN KEY (Cliente_CPF) REFERENCES Cliente(CPF),
-    FOREIGN KEY (Locadora_CNPJ) REFERENCES Locadora(CNPJ),
+    FOREIGN KEY (Cliente_CPF) REFERENCES Cliente(CPF) ON DELETE CASCADE,
+    FOREIGN KEY (Locadora_CNPJ) REFERENCES Locadora(CNPJ) ON DELETE CASCADE,
     FOREIGN KEY (Filme_Id) REFERENCES Filme(Id)
 );
 
@@ -65,8 +65,8 @@ CREATE TABLE Multa (
     Locadora_CNPJ VARCHAR(18) NOT NULL,
     Emprestimo_Id INT NOT NULL,
 
-    FOREIGN KEY (Locadora_CNPJ) REFERENCES Locadora(CNPJ),
-    FOREIGN KEY (Emprestimo_Id) REFERENCES Emprestimo(Id)
+    FOREIGN KEY (Locadora_CNPJ) REFERENCES Locadora(CNPJ) ON DELETE CASCADE,
+    FOREIGN KEY (Emprestimo_Id) REFERENCES Emprestimo(Id) ON DELETE CASCADE
 );
 /*
 CREATE ROLE 'Cargo_Vendedor';

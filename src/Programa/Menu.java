@@ -150,21 +150,21 @@ public class Menu {
 
         while(vendedorAtual.isLogado()) {
             reset();
-            addOption("Deslogar da conta");               // 1
-            addOption("Adicionar filme");                  // 2
-            addOption("Remover filme");                    // 3
-            addOption("Editar filme");                     // 4
-            addOption("Editar cliente");                   // 5
-            addOption("Deletar cliente");                  // 6
-            addOption("Deletar empréstimo");               // 7
-            addOption("Deletar multa");                    // 8
-            addOption("Ver todas as tabelas");             // 9
-            addOption("Consultar locadora e vendedores");  // 10
+            addOption("Deslogar da conta");
+            addOption("Adicionar filme");
+            addOption("Remover filme");
+            addOption("Editar filme");
+            addOption("Editar cliente");
+            addOption("Deletar cliente");
+            addOption("Deletar empréstimo");
+            addOption("Deletar multa");
+            addOption("Ver todas as tabelas");
+            addOption("Consultar locadora e vendedores");
             if (vendedorAtual.isAdmin()) {
-                addOption("Adicionar vendedor");           // 11
-                addOption("Remover vendedor");             // 12
-                addOption("Tornar vendedor admin / remover admin"); // 13
-                addOption("Editar locadora");              // 14
+                addOption("Adicionar vendedor");
+                addOption("Remover vendedor");
+                addOption("Tornar vendedor admin / remover admin");
+                addOption("Editar locadora");
             }
             verificarOption();
 

@@ -38,19 +38,18 @@ public class Cliente extends Conta {
     }
 
     public void pagaMulta(int id, Connection bd) {
-        for (int i = 0; i < multas.size(); i++) {
-            if (multas.get(i).getId() == id && multas.get(i).getDataDePagamento() == null) {
+        for (Multa multa : multas) {
+            if (multa.getId() == id && multa.getDataDePagamento() == null) {
                 String sql = "UPDATE Multa SET DataPagamento = ? WHERE Id = ?";
                 try (PreparedStatement st = bd.prepareStatement(sql)) {
-                    st.setDate(1, java.sql.Date.valueOf(LocalDate.now()));
-                    st.setInt(2, multas.get(i).getId());
+                    st.setDate(1, Date.valueOf(LocalDate.now()));
+                    st.setInt(2, multa.getId());
                     st.executeUpdate();
                 } catch (SQLException e) {
                     System.out.println("Erro ao pagar multa!");
-                    e.printStackTrace();
                     return;
                 }
-                multas.get(i).setDataDePagamento(LocalDate.now());
+                multa.setDataDePagamento(LocalDate.now());
                 System.out.println("Multa paga!");
                 return;
             }
@@ -94,21 +93,20 @@ public class Cliente extends Conta {
 
                 String sql = "INSERT INTO Emprestimo (Data, Devolucao, Cliente_CPF, Locadora_CNPJ, Filme_Id, NomeFilme) " +
                         "VALUES (?, ?, ?, ?, ?, ?)";
-                try (PreparedStatement st = bd.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                    st.setDate(1, java.sql.Date.valueOf(emprestimoPlaceholder.getData()));
-                    st.setDate(2, java.sql.Date.valueOf(emprestimoPlaceholder.getDevolucao()));
-                    st.setString(3, this.getCpf());
-                    st.setString(4, locadoraAtual.getCNPJ());
-                    st.setInt(5, filme.getIdFilme());
-                    st.setString(6, filme.getTitulo());
-                    st.executeUpdate();
+                try (PreparedStatement pst = bd.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                    pst.setDate(1, java.sql.Date.valueOf(emprestimoPlaceholder.getData()));
+                    pst.setDate(2, java.sql.Date.valueOf(emprestimoPlaceholder.getDevolucao()));
+                    pst.setString(3, this.getCpf());
+                    pst.setString(4, locadoraAtual.getCNPJ());
+                    pst.setInt(5, filme.getIdFilme());
+                    pst.setString(6, filme.getTitulo());
+                    pst.executeUpdate();
 
-                    try (ResultSet keys = st.getGeneratedKeys()) {
+                    try (ResultSet keys = pst.getGeneratedKeys()) {
                         if (keys.next()) emprestimoPlaceholder.setIdEmprestimo(keys.getInt(1));
                     }
                 } catch (SQLException e) {
                     System.out.println("Erro ao registrar aluguel!");
-                    e.printStackTrace();
                     return;
                 }
 
