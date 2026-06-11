@@ -50,7 +50,7 @@ public class VendedorDAO {
             pst.setString(6, cnpj);
             pst.setBoolean(7, vendedor.isAdmin());
             pst.executeUpdate();
-            System.out.println("Vendedor inserido com sucesso!");
+            System.out.println("Vendedor inserido no BD com sucesso!");
         } catch (SQLIntegrityConstraintViolationException e) {
             System.out.println("Vendedor já cadastrado!");
         } catch (SQLException e) {

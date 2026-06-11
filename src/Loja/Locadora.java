@@ -447,7 +447,7 @@ public class Locadora {
         String diretor = sc.nextLine();
         if (diretor.isBlank()) diretor = alvo.getDiretor();
 
-        System.out.print("Novo gênero (acao/comedia/suspense/terror/romance, atual mantido se vazio): ");
+        System.out.print("Novo gênero (acao/comedia/suspense/terror/romance): ");
         String genero = sc.nextLine().toLowerCase();
         if (genero.isBlank()) genero = alvo.getClass().getSimpleName().replace("Filme", "").toLowerCase();
 
