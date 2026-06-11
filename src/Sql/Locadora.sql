@@ -15,6 +15,16 @@ CREATE TABLE Cliente (
     Senha VARCHAR(255) NOT NULL
 );
 
+CREATE TABLE Cliente_da_Locadora (
+    Locadora_CNPJ VARCHAR(18) NOT NULL,
+    Cliente_CPF VARCHAR(20) NOT NULL,
+
+    PRIMARY KEY (Locadora_CNPJ, Cliente_CPF),
+    FOREIGN KEY (Locadora_CNPJ) REFERENCES Locadora(CNPJ) ON DELETE CASCADE,
+    FOREIGN KEY (Cliente_CPF) REFERENCES Cliente(CPF) ON DELETE CASCADE
+);
+
+
 CREATE TABLE Filme (
     Id INT PRIMARY KEY AUTO_INCREMENT,
     Titulo VARCHAR(45) NOT NULL,
@@ -82,14 +92,6 @@ CREATE USER 'vendedor'@'%' IDENTIFIED BY '1234';
 GRANT 'Cargo_Gerente' TO 'gerente'@'%';
 GRANT 'Cargo_Vendedor' TO 'vendedor'@'%';
 */
-CREATE TABLE Cliente_da_Locadora (
-    Locadora_CNPJ VARCHAR(18) NOT NULL,
-    Cliente_CPF VARCHAR(20) NOT NULL,
-
-    PRIMARY KEY (Locadora_CNPJ, Cliente_CPF),
-    FOREIGN KEY (Locadora_CNPJ) REFERENCES Locadora(CNPJ),
-    FOREIGN KEY (Cliente_CPF) REFERENCES Cliente(CPF)
-);
 
 INSERT INTO Locadora (CNPJ, Nome, Cidade) VALUES
     ('12.345.678/0001-95', 'Inafilmes', 'Santa Rita do Sapucaí'),

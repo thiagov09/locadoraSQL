@@ -25,7 +25,7 @@ public class Locadora {
     private ArrayList<Vendedor> vendedores = new ArrayList<>();
     private static Scanner sc = new Scanner(System.in);
 
-    private final Connection bd = BD.getConexao();
+    private final Connection bd;
     private final ClienteDAO clienteDAO;
     private final VendedorDAO vendedorDAO;
     private final FilmeDAO filmeDAO;
@@ -33,14 +33,16 @@ public class Locadora {
     private final MultaDAO multaDAO;
     private final LocadoraDAO locadoraDAO;
 
-    public Locadora() {
-        clienteDAO   = new ClienteDAO(bd);
-        vendedorDAO  = new VendedorDAO(bd);
-        filmeDAO     = new FilmeDAO(bd);
+    public Locadora(String cnpjNovo) {
+        this.CNPJ = cnpjNovo;
+        BD.conectar();
+        this.bd       = BD.getConexao();
+        clienteDAO    = new ClienteDAO(bd);
+        vendedorDAO   = new VendedorDAO(bd);
+        filmeDAO      = new FilmeDAO(bd);
         emprestimoDAO = new EmprestimoDAO(bd);
-        multaDAO     = new MultaDAO(bd);
-        locadoraDAO  = new LocadoraDAO(bd);
-
+        multaDAO      = new MultaDAO(bd);
+        locadoraDAO   = new LocadoraDAO(bd);
         updateFromSQL();
 
         System.out.println("========================================");
@@ -51,18 +53,26 @@ public class Locadora {
     }
 
     public void updateFromSQL() {
-        // Busca dados da própria locadora
-        String[] dados = locadoraDAO.buscarDados("12.345.678/0001-95");
+        String[] dados = locadoraDAO.buscarDados(CNPJ);
         if (dados != null) {
             this.CNPJ   = dados[0];
             this.nome   = dados[1];
             this.cidade = dados[2];
         }
 
-        // Delega o restante para os DAOs
         vendedores = vendedorDAO.listarPorLocadora(CNPJ);
-        clientes   = clienteDAO.listarPorLocadora(CNPJ);
-        filmes     = filmeDAO.listarPorLocadora(CNPJ);
+        if (vendedores.isEmpty()) {
+            System.out.println("Nenhum vendedor! Cadastre pelo menos um!");
+            addVendedor();
+            vendedores = vendedorDAO.listarPorLocadora(CNPJ);
+            if (!vendedores.isEmpty()) {
+                vendedores.get(0).setAdmin(true);
+                vendedorDAO.atualizarAdmin(vendedores.get(0).getCpf(), true);
+            }
+        }
+
+        clientes = clienteDAO.listarPorLocadora(CNPJ);
+        filmes   = filmeDAO.listarPorLocadora(CNPJ);
         emprestimoDAO.carregarParaClientes(clientes, CNPJ);
         multaDAO.carregarParaClientes(clientes, CNPJ);
     }
@@ -352,7 +362,6 @@ public class Locadora {
         }
         System.out.println("======================================\n");
 
-        System.out.print("Informe o CPF do vendedor: ");
         String busca = Menu.scanCPF();
 
         if (vendedorAtual.getCpf().equals(busca)) {
@@ -446,13 +455,12 @@ public class Locadora {
         String classif = sc.nextLine();
         if (classif.isBlank()) classif = alvo.getClassificacao();
 
-        int anoAtual = LocalDate.now().getYear();
         int ano = alvo.getAnoLancamento();
         System.out.print("Novo ano (atual: " + ano + ", enter para manter): ");
         String anoStr = sc.nextLine().trim();
         if (!anoStr.isBlank()) {
             try { ano = Integer.parseInt(anoStr); }
-            catch (NumberFormatException e) { System.out.println("Ano inválido, mantido o anterior."); ano = alvo.getAnoLancamento(); }
+            catch (NumberFormatException e) { System.out.println("Ano inválido, mantido o anterior."); }
         }
 
         Filme atualizado = switch (genero) {
@@ -488,8 +496,9 @@ public class Locadora {
         String cpf = Menu.scanCPF();
         for (int i = 0; i < clientes.size(); i++) {
             if (clientes.get(i).getCpf().equals(cpf)) {
-                vendedorDAO.deletarCliente(cpf);
+                vendedorDAO.deletar(cpf); // corrigido: era vendedorDAO.deletarCliente()
                 clientes.remove(i);
+                System.out.println("Cliente removido!\n");
                 return;
             }
         }

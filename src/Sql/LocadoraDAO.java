@@ -9,6 +9,72 @@ public class LocadoraDAO {
         this.bd = bd;
     }
 
+    static public void inserir(String cnpj, String nome, String cidade) {
+        BD.conectar();
+        Connection bd = BD.getConexao();
+        String sql = "INSERT INTO Locadora (CNPJ, Nome, Cidade) VALUES (?, ?, ?)";
+        try (PreparedStatement pst = bd.prepareStatement(sql)) {
+            pst.setString(1, cnpj);
+            pst.setString(2, nome);
+            pst.setString(3, cidade);
+            pst.executeUpdate();
+            System.out.println("Locadora inserida com sucesso!");
+        } catch (SQLException e) {
+            System.out.println("Erro SQL ao inserir locadora!");
+        }
+    }
+
+    static public void remover(String cnpj) {
+        BD.conectar();
+        Connection bd = BD.getConexao();
+        String sql = "DELETE FROM Locadora WHERE CNPJ = ?";
+        try (PreparedStatement pst = bd.prepareStatement(sql)) {
+            pst.setString(1, cnpj);
+            int linhasAfetadas = pst.executeUpdate();
+            if (linhasAfetadas > 0) {
+                System.out.println("Locadora removida com sucesso!");
+            } else {
+                System.out.println("Nenhuma locadora encontrada com esse CNPJ.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Erro SQL ao remover locadora!");
+            e.printStackTrace();
+
+        }
+    }
+
+
+    static public void listarTodasLocadoras() {
+        BD.conectar();
+        Connection bd = BD.getConexao();
+        String sql = "SELECT * FROM Locadora";
+        try (PreparedStatement pst = bd.prepareStatement(sql);
+             ResultSet rs = pst.executeQuery()) {
+            while (rs.next()) {
+                System.out.println("CNPJ: "   + rs.getString("CNPJ"));
+                System.out.println("Nome: "   + rs.getString("Nome"));
+                System.out.println("Cidade: " + rs.getString("Cidade"));
+                System.out.println("---");
+            }
+        } catch (SQLException e) {
+            System.out.println("Erro SQL ao listar locadoras!");
+        }
+    }
+    static public boolean locadoraExiste(String cnpj) {
+        BD.conectar();
+        Connection bd = BD.getConexao();
+        String sql = "SELECT 1 FROM Locadora WHERE CNPJ = ?";
+        try (PreparedStatement pst = bd.prepareStatement(sql)) {
+            pst.setString(1, cnpj);
+            try (ResultSet rs = pst.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            System.out.println("Erro SQL ao verificar locadora!");
+            return false;
+        }
+    }
+
     public String[] buscarDados(String cnpj) {
         BD.conectar();
         String sql = "SELECT CNPJ, Nome, Cidade FROM Locadora WHERE CNPJ = ?";

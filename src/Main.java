@@ -6,7 +6,6 @@ import Sql.BD;
 void main() {
     if(BD.conectar()) {
         System.out.println("Banco de dados conectado com sucesso!\n");
-        Locadora locadoraAtual = new Locadora();
 
         /*
         BD.novaLocadoraSQL("12.345.678/0001-95", "Inafilmes", "Santa Rita do Sapucaí");
@@ -15,6 +14,6 @@ void main() {
         locadoraAtual.addVendedor(new Vendedor("Vendedor2", "444.444.444-44", "senha", LocalDate.parse("2001-04-04"), 1900.00f, false));
         */
 
-        Menu.start(locadoraAtual);
+        Menu.start();
     }
 }

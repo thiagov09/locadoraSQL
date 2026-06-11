@@ -2,6 +2,7 @@ package Programa;
 
 import Loja.*;
 import Sql.BD;
+import Sql.LocadoraDAO;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -16,8 +17,41 @@ public class Menu {
     private static Locadora locadoraAtual;
     private static boolean enableOptionZero = true;
 
-    public static void start(Locadora locadoraNova){
-        locadoraAtual = locadoraNova;
+    public static void start(){
+        String cnpj = null;
+        meuloop:
+        while (true) {
+            reset();
+            addOption("Escolher locadora");
+            addOption("Inserir locadora");
+            addOption("Remover locadora");
+            verificarOption();
+            switch (option) {
+                    case 1:
+                        LocadoraDAO.listarTodasLocadoras();
+                        while(!LocadoraDAO.locadoraExiste(cnpj)){
+                            cnpj = scanCNPJ();
+                        }
+                        break meuloop;
+                    case 2:
+                        System.out.print("Digite o nome da locadora: ");
+                        String nomeNovo = sc.nextLine();
+                        String cnpjNovo = scanCNPJ();
+                        System.out.print("Digite o nome da cidade: ");
+                        String cidadeNova = sc.nextLine();
+                        LocadoraDAO.inserir(cnpjNovo, nomeNovo, cidadeNova);
+                        break;
+                    case 3:
+                        LocadoraDAO.listarTodasLocadoras();
+                        String cnpjRemover = null;
+                        while(!LocadoraDAO.locadoraExiste(cnpjRemover)){
+                            cnpjRemover = scanCNPJ();
+                        }
+                        LocadoraDAO.remover(cnpjRemover);
+                }
+        }
+        locadoraAtual = new Locadora(cnpj);
+
         System.out.println("--- Bem vindo a " + locadoraAtual.getNome() + " ---\n");
         locadoraAtual.verificaMultas();
         while(true){
@@ -89,6 +123,18 @@ public class Menu {
             }
 
             System.out.println("CPF inválido.");
+        }
+    }
+    public static String scanCNPJ() {
+        while (true) {
+            System.out.print("Digite o CNPJ no formato (xx.xxx.xxx/yyyy-zz): ");
+            String scannedCNPJ = sc.nextLine();
+
+            if (scannedCNPJ.matches("\\d{2}\\.\\d{3}\\.\\d{3}/\\d{4}-\\d{2}")) {
+                return scannedCNPJ;
+            }
+
+            System.out.println("CNPJ inválido.");
         }
     }
 
